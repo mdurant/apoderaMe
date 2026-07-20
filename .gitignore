@@ -2,7 +2,11 @@
 
 # dependencies
 node_modules/
-
+.claude/
+.vscode/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/*.mdc
 # Expo
 .expo/
 dist/
@@ -31,6 +35,9 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
+!.env.example
 .env*.local
 
 # typescript

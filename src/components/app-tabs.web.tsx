@@ -6,14 +6,20 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { Pressable, View, StyleSheet } from 'react-native';
 
-import { ExternalLink } from './external-link';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+
+type TabTone = 'primary' | 'positive' | 'warning' | 'accent' | 'info';
+type TabButtonProps = TabTriggerSlotProps & {
+  icon: SymbolViewProps['name'];
+  tone: TabTone;
+};
 
 export default function AppTabs() {
   return (
@@ -22,10 +28,47 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton
+              icon={{ ios: 'house.fill', android: 'home', web: 'home' }}
+              tone="primary">
+              Inicio
+            </TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="attendance" href="/attendance" asChild>
+            <TabButton
+              icon={{
+                ios: 'checkmark.circle.fill',
+                android: 'how_to_reg',
+                web: 'how_to_reg',
+              }}
+              tone="positive">
+              Asistencia
+            </TabButton>
+          </TabTrigger>
+          <TabTrigger name="payments" href="/payments" asChild>
+            <TabButton
+              icon={{ ios: 'creditcard.fill', android: 'payments', web: 'payments' }}
+              tone="warning">
+              Pagos
+            </TabButton>
+          </TabTrigger>
+          <TabTrigger name="activities" href="/activities" asChild>
+            <TabButton
+              icon={{ ios: 'calendar', android: 'event', web: 'event' }}
+              tone="accent">
+              Actividades
+            </TabButton>
+          </TabTrigger>
+          <TabTrigger name="profile" href="/profile" asChild>
+            <TabButton
+              icon={{
+                ios: 'person.crop.circle.fill',
+                android: 'account_circle',
+                web: 'account_circle',
+              }}
+              tone="info">
+              Perfil
+            </TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -33,13 +76,41 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+export function TabButton({ children, icon, isFocused, tone, ...props }: TabButtonProps) {
+  const colors = useTheme();
+  const foreground = colors[tone];
+  const background = colors[`${tone}Soft` as const];
+
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable
+      {...props}
+      style={({ pressed }) => [styles.tabPressable, pressed && styles.pressed]}>
       <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+        style={[
+          styles.tabButtonView,
+          {
+            backgroundColor: isFocused ? background : 'transparent',
+            borderColor: isFocused ? foreground : 'transparent',
+          },
+        ]}>
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: isFocused ? foreground : background },
+          ]}>
+          <SymbolView
+            name={icon}
+            size={16}
+            tintColor={isFocused ? colors.textInverse : foreground}
+          />
+        </View>
+        <ThemedText
+          type="small"
+          style={[
+            styles.tabLabel,
+            { color: isFocused ? foreground : colors.textSecondary },
+            isFocused && styles.tabLabelFocused,
+          ]}>
           {children}
         </ThemedText>
       </ThemedView>
@@ -48,28 +119,14 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 }
 
 export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
+          ApoderaMe
         </ThemedText>
 
         {props.children}
-
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
       </ThemedView>
     </View>
   );
@@ -86,8 +143,8 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
+    paddingHorizontal: Spacing.four,
+    borderRadius: Radius.xLarge,
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 1,
@@ -96,20 +153,38 @@ const styles = StyleSheet.create({
   },
   brandText: {
     marginRight: 'auto',
+    paddingRight: Spacing.two,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: 0.72,
+    transform: [{ scale: 0.97 }],
+  },
+  tabPressable: {
+    flexShrink: 1,
   },
   tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
-  externalPressable: {
+    minHeight: 42,
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
     gap: Spacing.one,
-    marginLeft: Spacing.three,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
+    borderRadius: Radius.medium,
+    borderWidth: 1,
+  },
+  iconContainer: {
+    width: 26,
+    height: 26,
+    borderRadius: Radius.small,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+  },
+  tabLabelFocused: {
+    fontWeight: '900',
   },
 });

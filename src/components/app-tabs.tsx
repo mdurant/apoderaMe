@@ -1,32 +1,42 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
+import { Tabs } from 'expo-router';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+
+const tabIcons: Record<string, SymbolViewProps['name']> = {
+  index: { ios: 'house.fill', android: 'home', web: 'home' },
+  attendance: { ios: 'checkmark.circle.fill', android: 'how_to_reg', web: 'how_to_reg' },
+  payments: { ios: 'creditcard.fill', android: 'payments', web: 'payments' },
+  activities: { ios: 'calendar', android: 'event', web: 'event' },
+  profile: { ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' },
+};
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+  const colors = useTheme();
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '700',
+        },
+        tabBarIcon: ({ color }) => (
+          <SymbolView name={tabIcons[route.name] ?? 'circle'} size={22} tintColor={color} />
+        ),
+      })}>
+      <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
+      <Tabs.Screen name="attendance" options={{ title: 'Asistencia' }} />
+      <Tabs.Screen name="payments" options={{ title: 'Pagos' }} />
+      <Tabs.Screen name="activities" options={{ title: 'Actividades' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Perfil' }} />
+    </Tabs>
   );
 }
