@@ -1,0 +1,39 @@
+---
+description: Seguridad y flujo de trabajo para PostgreSQL, RLS y Supabase
+globs: "{supabase/**/*.sql,src/lib/supabase.ts}"
+alwaysApply: false
+---
+
+# PostgreSQL y Supabase
+
+- PostgreSQL es la fuente de verdad; Supabase Auth autentica y RLS autoriza.
+- Todo cambio de esquema se realiza en una migración nueva e idempotente cuando corresponda.
+- Nunca edites una migración ya aplicada en ambientes compartidos; crea una migración correctiva.
+- Aísla datos por colegio y curso mediante claves, relaciones e índices verificables.
+- Usa FKs compuestas para impedir relaciones cruzadas entre tenants.
+- Usa `bigint` para CLP, `date` para fechas de negocio y `timestamptz` UTC para eventos.
+- Mantén PII sensible en el esquema `private`, sin grants para `anon` o `authenticated`.
+- Evita borrados en cascada sobre historial financiero o auditoría; prefiere estados y reversas.
+- Evita políticas `FOR ALL`; separa operaciones y limita columnas modificables.
+
+## RLS y funciones
+
+- Activa `ENABLE ROW LEVEL SECURITY` y `FORCE ROW LEVEL SECURITY` en tablas expuestas.
+- Declara políticas `TO authenticated` con `USING` y `WITH CHECK`.
+- Indexa columnas usadas por RLS: `school_id`, `course_id`, usuarios, estudiantes y estados.
+- Las funciones `SECURITY DEFINER` deben usar `SET search_path = ''`, nombres calificados y permisos mínimos.
+- Revoca `EXECUTE` público antes de otorgarlo explícitamente.
+- No confíes en `raw_user_meta_data` para permisos ni en filtros enviados por el cliente.
+- Cambios financieros sensibles deben pasar por RPC transaccionales y auditables.
+- La aprobación de pagos debe bloquear filas, impedir sobrepagos y recalcular saldos atómicamente.
+- Auditoría y pagos aprobados son append-only; las correcciones se registran como reversas.
+
+## Storage y operaciones
+
+- Buckets de comprobantes son privados, con MIME/tamaño restringidos y URLs firmadas breves.
+- La ruta Storage debe coincidir exactamente con colegio, curso, entidad y metadatos SQL.
+- La app Expo usa HTTPS/PostgREST; nunca se conecta directamente al puerto PostgreSQL.
+- Contraseñas PostgreSQL solo van en prompts, gestores de secretos o CI protegido.
+- Antes de `db push`: ejecuta `migration list`, `db push --dry-run` y revisa el SQL.
+- Nunca ejecutes `db reset` contra remoto ni incluyas contraseñas en argumentos del shell.
+- Prueba aislamiento entre colegios, cursos y roles antes de producción.

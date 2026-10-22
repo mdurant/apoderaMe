@@ -1,0 +1,34 @@
+---
+description: Convenciones base para desarrollar ApoderaMe con Expo y datos chilenos
+alwaysApply: true
+---
+
+# Reglas base de ApoderaMe
+
+- Comunica interfaz, mensajes y documentación en español de Chile.
+- Usa Expo SDK 57, React Native 0.86, Expo Router y TypeScript estricto.
+- Antes de cambiar APIs Expo, consulta `https://docs.expo.dev/versions/v57.0.0/`.
+- Mantén Android, iOS y web desde la misma base; no agregues otro frontend sin una decisión arquitectónica.
+- Usa navegación estable de `expo-router`; evita APIs `unstable-*` salvo justificación documentada.
+
+## Dominio chileno
+
+- Formatea CLP sin decimales, fechas con `es-CL` y zona `America/Santiago`.
+- Reutiliza `src/utils/chile.ts`; no dupliques validadores de RUT o formateadores.
+- Los datos demo deben ser ficticios, usar correos `.invalid` y no generar comunicaciones.
+- Cada demo debe mostrar datos y capacidades propios de su rol; no reutilices vistas privilegiadas.
+- Enmascara RUT en UI y logs; nunca lo uses como contraseña.
+- Trata valores PostgreSQL `date` como fechas civiles, sin conversión UTC a medianoche.
+- Expresa estados con texto además de color y mantén objetivos táctiles accesibles.
+
+## Arquitectura y calidad
+
+- Las pantallas consumen dominio/repositorios; no importan Supabase directamente.
+- Existe un solo cliente Supabase: `src/lib/supabase.ts`.
+- Mantén README, arquitectura, TODO y código sin decisiones contradictorias.
+- Usa variables `EXPO_PUBLIC_*` solo para URL y publishable key.
+- Nunca agregues contraseñas, `service_role`, secret keys o `DATABASE_URL` al cliente.
+- Mantén sesiones demo explícitamente separadas de autenticación real.
+- Después de cambios sustantivos ejecuta `npm run lint`, `npx tsc --noEmit` y `npm test`.
+- Verifica web con `npx expo export --platform web` cuando cambies rutas o navegación.
+- No ejecutes `npm audit fix --force` ni degradaciones de Expo para resolver transitivas.
